@@ -6,17 +6,10 @@
 
 #### 离散线性方程
 
-<style>
-    body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 24px;
-    }
-</style>
+
 
 **牛顿插值**
-若有$x_0,x_1\dots x_k$以及$y_0,y_1\dots y_k$，则牛顿插值的公式如下
+若有 $x_0,x_1\dots x_k$以及 $y_0,y_1\dots y_k$，则牛顿插值的公式如下
 $P_n(x) = f(x_0) + f(x_0,x_1)(x-x_0) + f(x_0,x_1,x_2)(x-x_0)(x-x_1) + \cdots + f(x_0,x_1,\ldots,x_n)(x-x_0)(x-x_1)\cdots(x-x_{n-1})$
 其中
 
