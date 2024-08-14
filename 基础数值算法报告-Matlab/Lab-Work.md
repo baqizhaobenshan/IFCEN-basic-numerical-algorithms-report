@@ -8,7 +8,7 @@
 
 **牛顿插值**
 
-若有$x_0,x_1\dots x_k$以及$y_0,y_1\dots y_k$，则牛顿插值的公式如下
+若有 $x_0 ,x_1 \dots x_k$以及 $y_0 , y_1 \dots y_k$，则牛顿插值的公式如下
 $P_n(x) = f(x_0) + f(x_0,x_1)(x-x_0) + f(x_0,x_1,x_2)(x-x_0)(x-x_1) + \cdots + f(x_0,x_1,\ldots,x_n)(x-x_0)(x-x_1)\cdots(x-x_{n-1})$
 其中
 
@@ -24,7 +24,7 @@ $$
 
 **拉格朗日插值**
 
-$L_1(x),L_2(x)\dots L_k(x)$为拉格朗日插值法的基函数，其公式如下
+$L_1(x),L_2(x)\dots L_k(x)$ 为拉格朗日插值法的基函数，其公式如下
 
 $$
 \begin{cases}
@@ -36,7 +36,7 @@ L_k(x) = \frac{(x - x_1)(x - x_2)(x - x_3)...(x - x_{k-1})(x - x_{k+1})...(x - x
 \end{cases}
 $$
 
-插值的多项式函数为$P(x) = \sum_{i=1}^n y_i L_i(x)$
+插值的多项式函数为 $P(x) = \sum_{i=1}^n y_i L_i(x)$
 </br><br>
 
 #### 流程图
@@ -225,9 +225,10 @@ end
 ![Alt text](Snipaste_2023-11-20_18-26-26.png)
 ![Alt text](Snipaste_2023-11-20_18-27-00.png)
 
+
 ### TP 1-4
 
-####离散线性方程
+#### 离散线性方程
 
 $$
 \begin{aligned}
