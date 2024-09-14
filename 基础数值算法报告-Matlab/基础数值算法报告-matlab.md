@@ -1,5 +1,3 @@
-# Lab-Work
-
 ## TP 1
 
 ### TP 1-1
@@ -461,3 +459,357 @@ graph LR
     G--否-->C
     H --> J[将T绘制为热图]
 ```
+### TP 2-2
+
+#### 离散线性方程
+
+**显式法**：
+
+$$
+y_{i+1}=y_i+hf(x_i,y_i)
+$$
+
+**隐式法**：
+
+$$
+y_{i+1}=y_i+hf(x_i+1,y_i+1)
+$$
+
+**四阶 R-K 法**：
+
+$$
+\begin{cases}
+K_1=h \cdot f(t_n,y_n) \\
+K_2=h \cdot f(t_n+\frac{1}{2}h,y_n+\frac{1}{2}hK_1) \\
+K_3=h \cdot f(t_n+\frac{1}{2}h,y_n+\frac{1}{2}hK_2)\\
+K_4=h \cdot f(t_n+h,y_n+hK_3)\\
+y_{n+1}=y_n+\frac{1}{6}K_1+\frac{1}{3}K_2+\frac{1}{3}K_3+\frac{1}{6}K_4
+\end{cases}
+$$
+
+#### 流程图
+
+```mermaid
+graph LR
+A(开始)-->B("设置参数，初始化n、C数组")
+B-->C("列出方程组")
+C-->E("判断i是否达到数组的数目")
+E--是-->D("数值求解n(i)、C(i)(选取不同的求解方法)")
+D-->F(绘图)
+E--否-->F(绘图)
+F-->I(结束)
+```
+
+
+
+#### 代码实现
+
+**显式法**
+
+```matlab
+function [n,C]=xianshi(h)
+rho=0.0022;Lambda=10^(-3);beta=0.0065;lambda=0.078;%定义参数
+t=[0 : h :1];%定义时间范围
+n=zeros(size(t));
+C=zeros(size(t));
+len = length(t);
+function n1 =Fun1(t,n,C)%定义方程组
+n1=(rho-beta).*n/Lambda+lambda.*C;
+end
+function C1=Fun2(t,n,C)
+C1=beta.*n./Lambda-lambda.*C;
+end
+%定义初值
+n(1)=1;      
+C(1)=1;      
+for i=2:len 
+n(i)=n(i-1)+h*Fun1(t(i-1),n(i-1),C(i-1));% 更新下一个dn/dt
+C(i)=C(i-1)+h*Fun2(t(i-1),n(i-1),C(i-1));% 更新下一个dC/dt
+end
+hold on;
+grid on;
+plot(t, n,'rh',t,C,'bo',LineWidth=1,MarkerSize=3);		
+xlabel('t/s');
+legend('$n(t)$','$C(t)$');
+title("显式法求解中子动力学方程",Interpreter="none");
+fig=gcf;
+fig.Children(1).Interpreter='latex';
+fig.Children(1).Title.Interpreter='latex';
+fig.Children(1).FontSize=13.5;
+fig.Children(2).FontSize=15;
+end
+```
+
+<div style="page-break-after: always;"></div>
+
+**隐式法**
+
+```matlab
+function [n,C]=yinshi(h)
+rho=0.0022;Lambda=10^(-3);beta=0.0065;lambda=0.078;%定义参数
+t=[0 : h :1];%定义时间范围
+n=zeros(size(t));
+C=zeros(size(t));
+len = length(t);
+function n1 =Fun1(t,n,C)%定义方程组
+n1=(rho-beta).*n/Lambda+lambda.*C;
+end
+function C1=Fun2(t,n,C)
+C1=beta.*n./Lambda-lambda.*C;
+end
+%定义初值
+n(1)=1;      
+C(1)=1;      
+for i=2:len 
+A = [1-h*(rho-beta)/Lambda, -h*lambda; -h*beta/Lambda, 1+h*lambda];
+B = [n(i-1); C(i-1)];
+%求解线性方程组
+X = linsolve(A,B);
+% 提取n(i)和C(i)
+n(i) = X(1);
+C(i) = X(2);
+end
+% hold on;
+% grid on;
+% plot(t, n,'rh',t,C,'bo',LineWidth=1,MarkerSize=3);		
+% xlabel('t/s');
+% legend('$n(t)$','$C(t)$');
+% title("隐式法求解中子动力学方程",Interpreter="none");
+% fig=gcf;
+% fig.Children(1).Interpreter='latex';
+% fig.Children(1).Title.Interpreter='latex';
+% fig.Children(1).FontSize=13.5;
+% fig.Children(2).FontSize=15;
+end
+```
+
+<div style="page-break-after: always;"></div>
+
+**四阶 R-K 法**
+
+```matlab
+function [n,C]=Four_RK(h)
+rho=0.0022;Lambda=10^(-3);beta=0.0065;lambda=0.078;%定义参数
+t=[0 : h :1];%定义时间范围
+n=zeros(size(t));
+C=zeros(size(t));
+len = length(t);
+function n1 =Fun1(t,n,C)%定义方程组
+n1=(rho-beta).*n/Lambda+lambda.*C;
+end
+function C1=Fun2(t,n,C)
+C1=beta.*n./Lambda-lambda.*C;
+end
+%定义初值
+n(1)=1;      
+C(1)=1;      
+for i=2:len
+%Kmn 表示第n次迭代，以m次导数作为f(x,y)
+K11 = Fun1(t(i-1),n(i-1),C(i-1));  
+K21 = Fun2(t(i-1),n(i-1),C(i-1));
+K12 = Fun1(t(i-1)+1/2*h , n(i-1)+1/2*h*K11 , C(i-1)+1/2*h*K21);
+K22 = Fun2(t(i-1)+1/2*h , n(i-1)+1/2*h*K11 , C(i-1)+1/2*h*K21);
+K13 = Fun1(t(i-1)+1/2*h , n(i-1)+1/2*h*K12 , C(i-1)+1/2*h*K22);
+K23 = Fun2(t(i-1)+1/2*h , n(i-1)+1/2*h*K12 , C(i-1)+1/2*h*K22);
+K14 = Fun1(t(i-1)+h , n(i-1)+h*K13 , C(i-1)+h*K23);
+K24 = Fun2(t(i-1)+h , n(i-1)+h*K13 , C(i-1)+h*K23);
+n(i) = n(i-1)+h/6*(K11 + 2*K12 + 2*K13 + K14);           % 更新下一个dn/dt
+C(i) = C(i-1)+h/6*(K21 + 2*K22 + 2*K23 + K24);         % 更新下一个dC/dt
+end
+hold on;
+grid on;
+plot(t, n,'rh',t,C,'bo',LineWidth=1,MarkerSize=3);		
+xlabel('t/s');
+legend('$n(t)$','$C(t)$');
+title("四阶R-K法求解中子动力学方程",Interpreter="none");
+fig=gcf;
+fig.Children(1).Interpreter='latex';
+fig.Children(1).Title.Interpreter='latex';
+fig.Children(1).FontSize=13.5;
+fig.Children(2).FontSize=15;
+end
+```
+
+
+
+#### 结果分析
+
+测试代码：`result_test.m`
+
+```matlab
+clc,clear;
+h_values = [0.1, 0.01, 0.001,0.0001,0.00001];  % 定义步长数组
+
+for i = 1:length(h_values)
+    h = h_values(i);
+    
+    [n, C] = Four_RK(h);
+    fprintf('Four_RK - Step size: %f, Last n: %f, Last C: %f\n', h, n(end), C(end));
+    
+    [n, C] = xianshi(h);
+    fprintf('xianshi - Step size: %f, Last n: %f, Last C: %f\n', h, n(end), C(end));
+    
+    [n, C] = yinshi(h);
+    fprintf('yinshi - Step size: %f, Last n: %f, Last C: %f\n', h, n(end), C(end));
+    fprintf("------------------------------------------------\n");
+end
+```
+测试代码: `stability_test.m`
+```matlab 
+clc,clear;
+% 定义一个步长数组
+h = [0.1, 0.05, 0.01, 0.005, 0.001];
+% 定义一个结果数组
+result = zeros(2, length(h));
+% 定义一个时间数组
+time = zeros(1, length(h));
+% 定义一个参考解，用最小的步长求解
+[n_ref, C_ref] = Four_RK(h(end));
+% 循环遍历不同的步长
+for i = 1:length(h)
+    % 记录开始时间
+    tic;
+    % 调用隐式、显式或四阶R-K函数求解
+    [n, C] =Four_RK(h(i));
+    % 记录结束时间
+    toc;
+    % 计算运行时间
+    time(i) = toc - tic;
+    % 计算结果的差异
+    result(1, i) = abs(n(end) - n_ref(end));
+    result(2, i) = abs(C(end) - C_ref(end));
+end
+% 显示结果
+% 显示结果
+disp('不同步长的n的差异：');
+disp(result(1,:));
+disp('不同步长的C的差异：');
+disp(result(2,:));
+```
+
+首先比较三种不同算法的结果，可以看见四阶 R-K 法收敛得较快：
+![alt text](微分方程结果对比.png)
+
+然后是稳定性与速度对比，比较三种不同的求解方法的原理为记录每种方法下不同步长计算所需的时长，并且定义步长最小时计算出来的结果为稳定解，比较不同步长下计算出来的结果，从而评估算法的稳定性以及速度.
+
+隐式:
+![alt text](yinshi.png)
+显式:
+![alt text](xianshi.png)
+四阶R-K法:
+![alt text](4-RK.png)
+
+1. 我们可以发现三者中显式法的计算耗时最少，四阶 R-K 法的耗时要比隐式法的耗时短，这可能是因为在隐式法求解时，使用了 matlab 内置的 `linsolve` 函数来线性方程组，这导致了当步长较小时，由于循环的原因，隐式法的耗时要比四阶 R-K 法要更长；
+
+2. 四阶 R-K 法中 n、C 差异是最小的，说明四阶 R-K 法的稳定性也是最好的，收敛速度较快；
+
+![alt text](四阶R-K法.jpg)
+## TP 3
+
+### TP 3-1
+
+#### 离散线性方程
+
+采用二阶中心差分格式，即：\\
+
+$$
+\frac{\partial^2 T}{\partial x^2}=\frac{T_{i+1}+T_{i-1}-2Ti}{(\Delta x)^2}
+$$
+
+$$
+\frac{\partial^2 T}{\partial y^2}=\frac{T_{i+1}+T_{i-1}-2Ti}{(\Delta y)^2}
+$$
+
+可以推导出
+
+$$
+T(i,j)=\frac{\frac{T(i+1,j)+T(i-1,j)}{(dx)^2}+\frac{T(i,j+1)+T(i,j-1)}{(dy)^2}-4.5\cdot e^{1.5(dx\cdot i+dy\cdot j)}}{\frac{2}{dx^2}+\frac{2}{dy^2}}
+$$
+
+#### 流程图
+
+```mermaid
+graph LR
+    A[初始化] --> B[初始化矩阵T，确定各个参数]
+    B --> C[使用二阶差分法更新矩阵T]
+    C --> G["比较新矩阵与旧矩阵，T_new-T_old的精度是否达到标准"]
+    G --是--> H[跳出循环]
+    G--否-->C
+    H --> J[将T绘制为热图]
+```
+
+
+
+#### 代码实现
+
+```matlab
+clc,clear;
+Nx=100;Ny=100;%我们对x轴分成Nx段，有Nx+1个点，对t轴分成Nt段，有Nt+1个点
+xd=1;yd=1;
+dx=xd/Nx;dy=yd/Ny;
+T=zeros(Nx+1,Ny+1);%生成(Nx+1)*(Ny+1)的矩阵
+T(1,:) = 293 + exp(3/2*linspace(0,xd,Nx+1));%T(0,y)=293+exp(3y/2)
+T(end,:)=293+exp((3/2)*(1+linspace(0,xd,Nx+1)));
+T(:,1)=293 + exp(3/2*linspace(0,yd,Ny+1));
+T(:,end)=293 + exp((3/2)*(1+linspace(0,yd,Ny+1)));
+error = 1e-3; % 误差阈值
+max_iterations = 100000; % 最大迭代次数
+% 进行迭代计算
+T_news=zeros(Nx+1,Ny+1);
+for iteration = 1:max_iterations
+    % 备份旧的温度矩阵
+    T_old = T;
+    for i=2:Nx
+        for j=2:Ny
+            T(i,j)=((T(i+1,j)+T(i-1,j))/(dx)^2+(T(i,j+1)+T(i,j-1))/(dy)^2-4.5*exp(1.5*(dx*i+dy*j)))/(2/dx^2+2/dy^2);
+        end
+    end
+    T_new=T;
+    diff = abs(T - T_old);
+    if max(diff(:)) < error
+        break;
+    end
+    % 更新温度矩阵
+    T = T_new;
+end
+x = dx*(0:Nx);  
+y = dy*(0:Ny);
+[X,Y]=meshgrid(x,y);
+s=surf(X,Y,T);
+s.EdgeColor="none";
+zlabel("T/K");
+colorbar;
+title("有限差分法求解二维传热方程");
+fig=gcf;
+fig.Children(1).FontSize=13.5;
+fig.Children(2).FontSize=15;
+
+T_exact = @(x,y) 293+exp(1.5*(x+y)); 
+T_exact_array=T_exact(X,Y);
+T_error=T_exact_array-T;
+figure;
+s=surf(X,Y,T_error);
+s.EdgeColor="none";
+zlabel("$\Delta T/K$",Interpreter="latex");
+colorbar;
+title("有限差分法求解二维传热方程的误差");
+fig=gcf;
+fig.Children(1).FontSize=13.5;
+fig.Children(2).FontSize=15;
+```
+
+
+
+#### 结果分析
+
+使用解析解 $T=293+exp\left(\frac{3}{2}(x+y)\right)$ 计算得到准确值 $T_{exact}$，$\Delta T = T_{exact} - T$，数值解曲面图 T 在左，误差 $\Delta T$ 的曲面图在右。
+
+| 精细度与迭代次数 | 数值解曲面图 | 误差曲面图 |
+| ------------ | ------------- | ------------ |
+| $11 \times 11$，迭代次数 109 次 | ![数值解曲面图](导热方程步长11_11.png) | ![误差曲面图](导热方程步长11_11误差.png) |
+| $51 \times 51$，迭代次数 1914 次 | ![数值解曲面图](导热方程步长51_51.png) | ![误差曲面图](导热方程步长51_51误差.png) |
+| $101 \times 101$，迭代次数 6249 次 | ![数值解曲面图](导热方程步长101_101.png) | ![误差曲面图](导热方程步长101_101误差.png) |
+
+可以发现：
+1. 解析解与数值解的主要误差来源于网格中间的区域；
+2. 在三者中，网格精细程度居中的 $51 \times 51$ 网格误差最小，说明网格越精细，结果不一定越准确。
